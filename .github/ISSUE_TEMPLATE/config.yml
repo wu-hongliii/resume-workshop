@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全漏洞私下报告
+    url: mailto:2725275630@qq.com
+    about: 请勿公开披露未修复漏洞，也不要发送真实简历或完整 API Key。

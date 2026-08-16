@@ -1,0 +1,2 @@
+"""Resume Workshop local application."""
+

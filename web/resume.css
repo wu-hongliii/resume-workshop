@@ -1,0 +1,60 @@
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #e8e5dd; color: #252722; }
+body { font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+.resume-page {
+  --ink: #252722;
+  --muted: #62665e;
+  --accent: #1f3a34;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 15mm 17mm;
+  background: #fffefb;
+  color: var(--ink);
+  font-size: 9.5pt;
+  line-height: 1.48;
+}
+.resume-fit { width: 100%; transform-origin: top center; }
+.resume-header { display: flex; align-items: center; gap: 6mm; padding-bottom: 5mm; border-bottom: 1.4mm solid var(--accent); }
+.identity { min-width: 0; flex: 1; }
+.portrait { width: 25mm; height: 31mm; object-fit: cover; order: 2; border-radius: 1mm; filter: saturate(.85); }
+h1 { margin: 0; font-family: Georgia, "Noto Serif CJK SC", serif; font-size: 25pt; letter-spacing: .7mm; color: var(--accent); }
+.target-role { margin: 1mm 0; color: var(--muted); font-size: 10.5pt; font-weight: 700; }
+.contact { margin: 0; color: var(--muted); font-size: 8.4pt; overflow-wrap: anywhere; }
+.resume-section { margin-top: 5mm; break-inside: avoid-page; }
+.resume-section h2 { margin: 0 0 2.4mm; padding-bottom: 1.3mm; border-bottom: .35mm solid color-mix(in srgb, var(--accent) 65%, white); color: var(--accent); font-size: 11.5pt; letter-spacing: .6mm; }
+.summary { margin: 0; text-align: justify; }
+.entry { margin-bottom: 3.3mm; break-inside: avoid; }
+.entry-head { display: flex; justify-content: space-between; gap: 5mm; align-items: baseline; }
+.entry h3 { margin: 0; font-size: 10.2pt; }
+.entry p { margin: .4mm 0 0; color: var(--muted); font-size: 8.6pt; }
+.entry time { color: var(--muted); font-size: 8.4pt; white-space: nowrap; }
+ul { margin: 1.2mm 0 0; padding-left: 4.5mm; }
+li { margin: .8mm 0; }
+.skill-list { display: grid; gap: 1.2mm; }
+.skill-row { display: grid; grid-template-columns: 28mm 1fr; gap: 3mm; }
+.skill-row strong { color: var(--accent); }
+.template-ats { --accent: #1f3a34; }
+.template-ats .resume-header { text-align: center; }
+.template-ats .portrait { order: 0; }
+.template-editorial { --accent: #8b4a32; padding-left: 22mm; padding-right: 15mm; }
+.template-editorial .resume-header { border-bottom-width: .4mm; }
+.template-editorial h1 { font-size: 27pt; }
+.template-editorial .resume-section h2 { border-bottom: 0; border-left: 1.4mm solid var(--accent); padding: 0 0 0 3mm; }
+.template-creative { --accent: #234b78; background: linear-gradient(90deg, #edf2f5 0 46mm, #fffefb 46mm); padding-left: 14mm; }
+.template-creative .resume-header { margin-left: 38mm; }
+.template-creative .resume-content { margin-left: 38mm; }
+.template-creative .resume-section h2 { font-family: Georgia, "Noto Serif CJK SC", serif; border-bottom-style: dotted; }
+.template-custom { font-family: var(--custom-font), "Microsoft YaHei", sans-serif; }
+.template-custom.header-center .resume-header { text-align: center; }
+.template-custom.header-center .resume-header .identity { text-align: center; }
+.template-custom.layout-sidebar { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, white) 0 45mm, #fffefb 45mm); }
+.template-custom.layout-sidebar .resume-header,
+.template-custom.layout-sidebar .resume-content { margin-left: 34mm; }
+.page-one { height: 297mm; overflow: hidden; }
+.page-auto { min-height: 297mm; height: auto; overflow: visible; }
+@media print {
+  html, body { background: white; }
+  .resume-page { margin: 0; box-shadow: none; }
+}

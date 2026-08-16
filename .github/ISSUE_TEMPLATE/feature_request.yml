@@ -1,0 +1,43 @@
+name: 功能建议
+description: 提议一个具体、可验证的改进
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你遇到的真实问题
+      description: 请描述使用场景，不要只写功能名称。
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 希望达到的效果
+      description: 最好写出用户如何操作、完成后看到什么。
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 涉及模块
+      options:
+        - 导入与 OCR
+        - 基础档案
+        - 岗位匹配与学习路径
+        - 内容编辑与 AI
+        - 模板、排版与导出
+        - 安装、更新与其他
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 当前替代方法
+  - type: checkboxes
+    id: license
+    attributes:
+      label: 项目边界
+      options:
+        - label: 我理解项目采用源码公开的非商业许可
+          required: true

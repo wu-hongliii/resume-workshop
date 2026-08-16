@@ -1,0 +1,47 @@
+name: Bug 报告
+description: 报告可复现的功能或排版问题
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "请先移除姓名、电话、API Key 等隐私信息。安全漏洞不要在这里公开，请发送至 2725275630@qq.com。"
+  - type: input
+    id: version
+    attributes:
+      label: 版本与来源
+      description: 例如 v0.3.0-beta，Windows 安装版 / 便携版 / 源码
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: 操作系统
+      placeholder: Windows 11 x64 / macOS 15 Apple Silicon
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从空白状态开始，逐步说明点击和输入内容。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 脱敏截图或日志
+      description: 不要上传真实简历、完整 API Key 或收款信息。
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私确认
+      options:
+        - label: 我已确认提交内容不含真实个人资料和密钥
+          required: true

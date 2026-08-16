@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简历工坊</title>
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <link rel="stylesheet" href="/app.css?v=20260816.1">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">简</span>
+        <div><strong>简历工坊</strong><small>LOCAL RESUME STUDIO</small></div>
+      </div>
+      <nav class="steps" aria-label="制作步骤">
+        <button class="step active" data-step="import"><b>01</b><span>导入资料<small>旧简历或手动填写</small></span></button>
+        <button class="step" data-step="profile"><b>02</b><span>确认档案<small>校对事实与经历</small></span></button>
+        <button class="step" data-step="match"><b>03</b><span>岗位匹配<small>分析 JD 与差距</small></span></button>
+        <button class="step" data-step="polish"><b>04</b><span>内容编辑<small>全文修改与动态追问</small></span></button>
+        <button class="step" data-step="design"><b>05</b><span>排版导出<small>模板、PDF 与 Word</small></span></button>
+      </nav>
+      <div class="privacy-note"><i></i><span>资料保存在本机<br>仅主动操作时调用 API</span></div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div><p class="eyebrow">个人简历项目</p><input id="resumeTitle" class="title-input" value="我的定制简历" aria-label="简历名称"></div>
+        <div class="top-actions">
+          <button id="saveResumeVariantBtn" type="button" class="topbar-button primary">保存当前岗位</button>
+          <button id="newResumeVariantBtn" type="button" class="topbar-button secondary">新建岗位简历</button>
+          <button id="resumeLibraryBtn" type="button" class="topbar-button secondary">岗位库（0）</button>
+          <span id="saveStatus" class="save-status">已保存</span>
+          <button id="helpBtn" class="icon-button" type="button" title="使用帮助" aria-label="打开新手引导">?</button>
+          <button id="aboutBtn" class="icon-button" type="button" title="关于与支持作者" aria-label="打开关于页面">i</button>
+          <button id="settingsBtn" class="icon-button" title="设置">⚙</button>
+        </div>
+      </header>
+
+      <section id="panel-import" class="panel active">
+        <div class="panel-heading"><div><p class="eyebrow">START HERE</p><h1>把过去交给系统整理，<br><em>事实仍由你掌控。</em></h1></div><p>上传旧简历或粘贴文字。系统先提取原文，再由你确认，不会直接覆盖个人档案。</p></div>
+        <div class="import-grid">
+          <label class="dropzone" id="dropzone">
+            <input id="resumeFile" type="file" multiple accept=".docx,.pdf,.png,.jpg,.jpeg,.webp,.bmp">
+            <span class="drop-icon">↥</span><strong>上传旧简历</strong>
+            <span>DOCX、PDF、扫描件或图片 · 单个最大 20 MB</span>
+            <button id="chooseFilesBtn" type="button" class="secondary">选择文件（可多选）</button>
+          </label>
+          <div class="paste-card">
+            <label for="rawText">或者粘贴简历文字</label>
+            <textarea id="rawText" placeholder="把旧简历全文粘贴到这里，也可以直接去下一步手动填写……"></textarea>
+            <div class="row between"><span id="parseMeta" class="hint">尚未导入资料</span><button id="openDemoGuideBtn" type="button" class="text-button">查看演示步骤</button></div>
+          </div>
+        </div>
+        <div class="action-bar"><button class="secondary" data-goto="profile">跳过，手动填写</button><button id="structureBtn" class="primary">AI 解析并确认 <span>→</span></button></div>
+      </section>
+
+      <section id="panel-profile" class="panel">
+        <div class="panel-heading compact"><div><p class="eyebrow">FACT CHECK</p><h1>确认你的基础人才档案</h1></div><p>所有岗位版本都从这里出发。请修正识别错误，并只填写真实发生的经历。</p></div>
+        <div class="profile-layout">
+          <div id="profileEditor" class="profile-editor"></div>
+          <aside class="profile-aside">
+            <div class="aside-card"><span class="count" id="completeness">0%</span><strong>档案完整度</strong><p>完整不等于冗长。优先补齐职位、时间、成果与联系方式。</p></div>
+            <label class="photo-upload"><input id="photoInput" type="file" accept="image/*"><span id="photoPreview">＋</span><strong>添加照片</strong><small>导出时可保留或删除</small></label>
+          </aside>
+        </div>
+        <div class="action-bar"><button class="secondary" data-goto="import">返回导入</button><button class="primary" data-goto="match">保存并分析岗位 <span>→</span></button></div>
+      </section>
+
+      <section id="panel-match" class="panel">
+        <div class="panel-heading compact"><div><p class="eyebrow">POSITION FIT</p><h1>让每一份简历只服务于一个岗位</h1></div><p>粘贴招聘页面中的职位描述（JD）。匹配分仅用于发现表达和信息缺口，不代表录用概率。</p></div>
+        <div class="match-grid">
+          <div class="jd-card"><label for="jdText">目标岗位 JD</label><textarea id="jdText" placeholder="粘贴岗位职责、任职要求和加分项；也可以直接按 Ctrl+V 粘贴岗位截图……"></textarea><p id="jdPasteStatus" class="paste-hint">支持粘贴文字或岗位截图，图片将逐张 OCR，再由 AI 自动校对明显错字。</p><div id="jdOcrAudit" class="ocr-audit hidden"><div class="row between"><strong>OCR 校对记录</strong><div class="row"><button id="toggleJdOcrBtn" type="button" class="text-button">查看原始识别</button><button id="undoJdCorrectionBtn" type="button" class="text-button">撤销自动校对</button></div></div><details><summary>查看修改明细</summary><ul id="jdCorrectionList"></ul></details></div><button id="analyzeBtn" class="primary wide">开始匹配分析</button></div>
+          <div id="analysisResult" class="analysis-card empty"><span class="analysis-mark">◎</span><h3>等待岗位信息</h3><p>分析后会显示参考匹配度、已有优势、关键缺口和建议补充项。</p></div>
+        </div>
+        <div class="generation-setup">
+          <div><p class="eyebrow">GENERATION MODE</p><h2>这次求职属于哪种情况？</h2><p>模式决定系统是以旧经历为主，还是根据 JD 重点生成个人项目和技能草稿。</p></div>
+          <fieldset><legend>求职模式</legend><div class="segmented generation-choice"><button data-generation-mode="same_direction" class="active">同方向跳槽<small>重组已有经历</small></button><button data-generation-mode="career_switch">跨行业转行<small>生成个人项目与技能</small></button></div></fieldset>
+          <fieldset><legend>目标能力层级</legend><div class="segmented generation-choice level-choice"><button data-proficiency-level="novice">小白</button><button data-proficiency-level="beginner" class="active">入门</button><button data-proficiency-level="proficient">熟练</button><button data-proficiency-level="expert">精通</button></div><p class="level-hint">层级控制项目复杂度和表达深度，不会虚构公司任职经历。</p></fieldset>
+        </div>
+        <div class="related-experience-card">
+          <div><p class="eyebrow">OPTIONAL CONTEXT</p><label for="relatedExperience">想让 AI 参考的补充信息（可选）</label><p>可写个人兴趣、学习方向、已有练习、希望强调的内容，留空也能直接生成完整草稿。</p></div>
+          <textarea id="relatedExperience" placeholder="例如：长期关注 A 股，使用过同花顺，希望突出复盘习惯和风险意识……"></textarea>
+          <small>跨行业模式会根据 JD 生成个人项目、模拟项目和技能，不会新增虚构公司或任职时间。</small>
+        </div>
+        <details class="project-folder-card utility-card">
+          <summary><span><b>从项目文件夹整理案例</b><small>代码、文档、表格与图片 → 可审核的项目草稿</small></span><i>展开</i></summary>
+          <div class="utility-card-body"><p>只读取你确认授权的本地文件夹；系统会先提取可追溯事实，再自动判断软件、工程、研究、金融、文章等材料类型。新版 Edge/Chrome 将直接请求目录权限，原文件不会保存到云端。</p><div class="utility-actions"><button id="chooseProjectFolderBtn" type="button" class="secondary">选择本地文件夹</button><input id="projectFolderInput" class="hidden" type="file" webkitdirectory multiple><span id="projectFolderSummary" class="hint">尚未选择文件夹</span><button id="analyzeProjectFolderBtn" type="button" class="secondary" disabled>生成案例草稿</button></div><div id="projectCaseDraft" class="project-case-draft hidden"><div class="material-type-controls"><span id="projectMaterialTypeStatus">等待识别材料类型</span><label for="projectMaterialType">整理方式</label><select id="projectMaterialType"><option value="">自动识别</option><option value="software">软件、AI或数据项目</option><option value="engineering">工程设计或施工项目</option><option value="finance">金融研究或交易案例</option><option value="research">科研、论文或实验</option><option value="business">产品、运营或商业项目</option><option value="content">内容创作、文章或报告</option><option value="management">管理、流程或组织项目</option><option value="education">教学、培训或公益项目</option><option value="general">通用工作案例</option></select><button id="reanalyzeProjectCaseBtn" type="button" class="secondary">按此类型重新整理</button></div><label for="projectCaseText">案例草稿（确认后才会加入补充信息）</label><textarea id="projectCaseText"></textarea><details id="projectCaseEvidenceDetails" class="case-evidence"><summary id="projectCaseEvidence">查看材料依据</summary><div id="projectCaseEvidenceList"></div></details><div class="row end"><button id="addProjectCaseBtn" type="button" class="primary">加入补充信息</button></div></div></div>
+        </details>
+        <details id="learningPathCard" class="learning-path-card utility-card hidden"><summary><span><b>转行学习路径</b><small>根据岗位差距规划免费中文学习资源</small></span><i>展开</i></summary><div class="utility-card-body"><div class="row between"><p class="hint">先完成岗位匹配，再按当前缺口生成路线。</p><button id="generateLearningPathBtn" type="button" class="secondary">按差距生成路径</button></div><div id="learningPathResult" class="learning-path-result"></div></div></details>
+        <div class="action-bar"><button class="secondary" data-goto="profile">返回档案</button><button id="generateTailoredBtn" class="primary">生成岗位定制简历 <span>→</span></button></div>
+      </section>
+
+      <section id="panel-polish" class="panel">
+        <div class="panel-heading compact"><div><p class="eyebrow">EDITOR'S DESK</p><h1>生成全文，然后按你的想法修改</h1></div><p>这里就是最终简历正文。可以直接修改，也可以启动动态追问，每次回答一个问题，让系统继续完善当前版本。</p></div>
+        <div id="tailoredBanner" class="tailored-banner"><span>基础档案模式</span><p>尚未生成岗位定制内容，当前操作将以基础档案为准。</p></div>
+        <div class="ai-editor-layout">
+          <section class="tailored-review">
+            <header><div><p class="eyebrow">TAILORED RESUME</p><h2>岗位定制简历正文</h2></div><p>点击任一输入框，或选中其中一段文字，再把修改要求交给右侧 AI。</p></header>
+            <div id="refineChangeNotice" class="refine-change-notice hidden"></div>
+            <div id="tailoredContentEditor"><div class="empty-state compact-empty">生成岗位定制简历后，正文会完整显示在这里。</div></div>
+          </section>
+          <aside class="ai-copilot">
+            <p class="eyebrow">AI COPILOT</p><h2>告诉 AI 怎么改</h2>
+            <div id="aiEditTarget" class="ai-edit-target empty"><strong>整份简历调整模式</strong><span>没有选中字段，可以让 AI 新增、删除或重新生成项目与其他模块。</span></div>
+            <button id="clearAiTargetBtn" type="button" class="ai-clear-target hidden">不改这个字段，调整整份简历</button>
+            <label for="aiEditInstruction">修改要求</label>
+            <textarea id="aiEditInstruction" placeholder="例如：删除“模拟交易规则优化练习”，重新生成一个通达信指标项目，包含个股 RPS、板块 RPS 和月线反转。"></textarea>
+            <div class="ai-quick-prompts"><button type="button" data-ai-prompt="改得更专业、具体，并去除 AI 腔">更专业</button><button type="button" data-ai-prompt="压缩文字，保留最有竞争力的信息">精简</button><button type="button" data-ai-prompt="结合 JD 调整内容，删除无关项，不要编造公司任职经历">贴合 JD</button></div>
+            <div class="ai-main-actions"><button id="applyAiAddBtn" class="primary wide" disabled>AI 智能新增</button><button id="applyAiEditBtn" class="secondary wide" disabled>AI 调整整份简历</button></div>
+            <div class="edit-history-actions"><button id="undoAiEditBtn" class="text-button" disabled>撤销上次操作</button><button id="redoAiEditBtn" class="text-button" disabled>恢复上次操作</button></div>
+            <p id="editHistoryHint" class="edit-history-hint">完成一次修改后即可撤销；撤销后即可恢复。</p>
+            <p class="ai-edit-hint">选中文字时精准修改；未选字段时可智能增删或重做模块。所有操作均可撤销，基础人才档案不会被覆盖。</p>
+          </aside>
+        </div>
+        <details class="legacy-question-panel"><summary>需要时再用：动态追问</summary>
+          <div class="polish-subhead"><div><p class="eyebrow">DYNAMIC INTERVIEW</p><h2>对话式精修</h2></div><p>可选功能。系统会结合当前正文和 JD 一次只问一个问题。</p></div>
+          <div class="polish-toolbar"><button id="questionBtn" class="secondary">开始动态追问</button></div>
+          <div id="questionCard" class="question-card hidden">
+            <div class="question-nav"><button id="previousQuestionBtn" class="secondary">← 上一问</button><span id="questionPosition">第 1 问</span><button id="nextQuestionBtn" class="secondary">下一问 →</button></div>
+            <p class="eyebrow">NEXT QUESTION</p><h3 id="questionText"></h3><p id="questionWhy"></p>
+            <textarea id="answerText" aria-label="追问回答" placeholder="请输入真实、可验证的回答……"></textarea>
+            <div class="row"><button id="skipQuestionBtn" class="text-button">跳过</button><button id="stopQuestionBtn" class="secondary">结束追问</button><button id="answerBtn" class="primary">提交并继续</button></div>
+          </div>
+        </details>
+        <div class="action-bar"><button class="secondary" data-goto="match">返回匹配</button><button class="primary" data-goto="design">排版与导出 <span>→</span></button></div>
+      </section>
+
+      <section id="panel-design" class="panel design-panel">
+        <div class="design-controls">
+          <div><p class="eyebrow">FINAL LAYOUT</p><h1>排版与导出</h1><span id="contentSourceBadge" class="content-source-badge">基础档案</span></div>
+          <fieldset><legend>模板</legend><div class="segmented"><button data-template="ats" class="active">ATS 稳定</button><button data-template="editorial">编辑部</button><button data-template="creative">轻创意</button></div></fieldset>
+          <fieldset class="custom-template-box"><legend>自定义模板</legend><label class="button-like">导入 Word / PDF / 图片<input id="templateFileInput" type="file" accept=".docx,.pdf,.png,.jpg,.jpeg,.webp,.bmp"></label><p id="customTemplateStatus" class="hint">解析后会重建为可编辑模板，不导入示例人物内容。</p><div class="template-site-toolbar"><div id="templateSites" class="template-sites" aria-live="polite"></div><button id="refreshTemplateSitesBtn" class="text-button" type="button" title="换一批免费网站">↻ 换一批</button></div><small>入口均主打免登录使用；下载后可将 Word、PDF 或截图导入。第三方规则可能变化，请以网站当时说明为准。</small></fieldset>
+          <fieldset><legend>语言</legend><div class="segmented"><button data-language="zh" class="active">中文</button><button data-language="en">英文</button><button data-language="bilingual">中英混排</button></div></fieldset>
+          <fieldset><legend>页数</legend><div class="segmented"><button data-pages="one" class="active">默认一页</button><button data-pages="auto">允许多页</button></div></fieldset>
+          <fieldset><legend>模块顺序</legend><div id="sectionOrder" class="section-order"></div></fieldset>
+          <section class="delivery-check"><div class="row between"><strong>投递前检查</strong><span id="deliveryCheckCount">检查中</span></div><ul id="deliveryChecklist"></ul></section>
+          <div class="export-stack"><button id="pdfBtn" class="primary wide">一键导出 PDF</button><button id="docxBtn" class="secondary wide">一键导出 Word</button><button id="printBtn" class="text-button wide">使用 Ctrl+P 备用打印</button><p id="exportQualityHint" class="export-quality-hint">PDF 与预览同源；Word 为可编辑版本，打开后可能因本机字体产生轻微重排。</p></div>
+        </div>
+        <div class="preview-stage"><div class="preview-label"><span>实时 A4 预览</span><span id="overflowHint">默认一页</span></div><iframe id="resumePreview" title="简历预览"></iframe></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="resumeLibraryDialog">
+    <form method="dialog" class="dialog-card">
+      <div class="dialog-head"><div><p class="eyebrow">RESUME LIBRARY</p><h2>岗位简历库</h2></div><button class="icon-button" value="cancel" aria-label="关闭">×</button></div>
+      <p class="library-intro">每个岗位版本独立保存 JD、定制正文、排版设置和问答记录；基础人才档案始终共用，不会被岗位版本覆盖。</p>
+      <div id="resumeLibraryList" class="resume-library-list"></div>
+    </form>
+  </dialog>
+
+  <dialog id="onboardingDialog" class="onboarding-dialog" aria-labelledby="onboardingTitle">
+    <div class="onboarding-card">
+      <button id="closeOnboardingBtn" class="icon-button onboarding-close" type="button" aria-label="关闭新手引导">×</button>
+      <aside class="onboarding-rail">
+        <p class="eyebrow">QUICK START</p>
+        <h2>跟着示例走完<br>第一份岗位简历</h2>
+        <p>完整资料包包含同行业跳槽和跨行业转行两条路线，所有人物与经历均为虚构演示数据。</p>
+        <a id="demoPackageBtn" class="onboarding-download" href="/api/demo-package" download><strong>下载完整演示资料包</strong><span>旧简历 · JD · 截图 · 项目证据 · 模板</span></a>
+        <ol id="onboardingStepList" class="onboarding-step-list"></ol>
+      </aside>
+      <section class="onboarding-content">
+        <div class="onboarding-progress"><span id="onboardingProgressBar"></span></div>
+        <p id="onboardingKicker" class="eyebrow"></p>
+        <div id="onboardingNumber" class="onboarding-number" aria-hidden="true"></div>
+        <h2 id="onboardingTitle"></h2>
+        <p id="onboardingDescription" class="onboarding-description"></p>
+        <ul id="onboardingPoints" class="onboarding-points"></ul>
+        <div class="onboarding-details">
+          <div><span>本步使用</span><strong id="onboardingSample"></strong></div>
+          <div><span>完成标志</span><strong id="onboardingDone"></strong></div>
+        </div>
+        <div class="onboarding-note"><strong>隐私说明</strong><span>档案默认留在你的电脑；只有主动使用 AI、OCR 校对或课程搜索时，才发送完成该操作所需的最少内容。</span></div>
+        <footer class="onboarding-actions">
+          <button id="skipOnboardingBtn" type="button" class="text-button">暂时跳过</button>
+          <div class="row">
+            <button id="goOnboardingBtn" type="button" class="secondary">前往此功能</button>
+            <button id="previousOnboardingBtn" type="button" class="secondary">上一步</button>
+            <button id="nextOnboardingBtn" type="button" class="primary">下一步</button>
+          </div>
+        </footer>
+      </section>
+    </div>
+  </dialog>
+
+  <dialog id="termsDialog" aria-labelledby="termsTitle">
+    <div class="dialog-card terms-card">
+      <p class="eyebrow">BEFORE YOU START</p>
+      <h2 id="termsTitle">开始前，请确认使用边界</h2>
+      <div class="terms-points">
+        <p><strong>内容责任</strong><span>AI 和 OCR 可能出现错误。投递前请逐项核对，并由你对最终简历内容负责。</span></p>
+        <p><strong>事实边界</strong><span>不要虚构可核验的公司任职、学历、证书或精确业绩；个人与模拟项目应能在面试中解释。</span></p>
+        <p><strong>隐私边界</strong><span>资料默认保存在本机。只有你主动使用云端 AI、OCR 校对或课程搜索时，才发送完成该操作所需的内容。</span></p>
+        <p><strong>许可摘要</strong><span>本软件源码公开、个人与公司内部使用免费，禁止未经授权的商业销售、收费打包和付费服务集成。</span></p>
+      </div>
+      <p class="hint">继续即表示你已阅读并同意项目许可与上述使用说明。完整条款以公开仓库中的 LICENSE 为准。</p>
+      <div class="row end"><button id="acceptTermsBtn" type="button" class="primary">我已阅读，开始使用</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <div class="dialog-card about-card">
+      <div class="dialog-head"><div><p class="eyebrow">ABOUT & SUPPORT</p><h2 id="aboutTitle">简历工坊</h2></div><button id="closeAboutBtn" class="icon-button" type="button" aria-label="关闭">×</button></div>
+      <p id="supportPromptMessage" class="support-prompt hidden"><strong>导出成功，祝你求职顺利。</strong><span>如果这个工具确实帮到了你，可以给项目一个 Star，或完全自愿地支持作者。关闭后不会再次自动提醒。</span></p>
+      <div class="about-intro">
+        <p><strong>Local Resume Studio · v0.3.0-beta</strong><span>本地优先的 AI 岗位简历工作台</span></p>
+        <p>基础档案、岗位版本和历史数据默认保存在本机；项目采用源码公开的非商业许可。</p>
+      </div>
+      <div class="about-actions">
+        <a class="primary" href="https://github.com/wu-hongliii/resume-workshop" target="_blank" rel="noopener">在 GitHub 点 Star</a>
+        <a class="secondary" href="mailto:2725275630@qq.com">反馈 / 商业授权 / 安全报告</a>
+      </div>
+      <section class="support-section">
+        <div><h3>支持作者（完全自愿）</h3><p>支持与否不会影响任何功能，也不会改变后续更新或技术支持。</p></div>
+        <div class="support-qr-grid">
+          <figure><img src="/assets/support-wechat.png" alt="微信支持作者二维码"><figcaption>微信</figcaption></figure>
+          <figure><img src="/assets/support-alipay.png" alt="支付宝支持作者二维码"><figcaption>支付宝</figcaption></figure>
+        </div>
+      </section>
+      <section class="update-section">
+        <div><h3>手动检查更新</h3><p>只有点击按钮时才会访问 GitHub，不会发送简历或使用数据。</p></div>
+        <div class="row"><button id="checkUpdateBtn" type="button" class="secondary">检查新版本</button><span id="updateStatus" class="hint">当前版本 v0.3.0-beta</span></div>
+      </section>
+      <footer class="about-footer">作者：wu-hongliii · 联系邮箱：2725275630@qq.com</footer>
+    </div>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" class="dialog-card">
+      <div class="dialog-head"><div><p class="eyebrow">LOCAL SETTINGS</p><h2>设置与数据</h2></div><button class="icon-button" value="cancel">×</button></div>
+      <section class="ai-settings-section">
+        <label for="aiProvider">AI 模型服务</label>
+        <div class="ai-settings-grid">
+          <select id="aiProvider" aria-label="AI 服务商"></select>
+          <input id="aiModel" type="text" maxlength="200" placeholder="模型名称">
+          <input id="aiBaseUrl" type="url" maxlength="500" placeholder="API Base URL">
+        </div>
+        <div class="key-row ai-key-row">
+          <input id="apiKey" type="password" maxlength="300" placeholder="API Key；本地模型通常可留空">
+          <button id="testAiBtn" type="button" class="secondary">测试连接</button>
+          <button id="saveKeyBtn" type="button" class="primary">保存设置</button>
+          <button id="clearAiKeyBtn" type="button" class="text-button">清除密钥</button>
+        </div>
+        <p id="keyStatus" class="hint">正在读取本地设置……</p>
+        <p class="privacy-callout">云端模型仅在你主动使用 AI 功能时接收完成该操作所需的简历正文、JD 或选中内容；API Key、照片和本地历史记录不会作为简历内容发送。Ollama 与 LM Studio 在本机运行。</p>
+      </section>
+      <section><label for="searchProvider">任意职业课程实时搜索（可选）</label><div class="search-key-grid"><select id="searchProvider"><option value="">关闭实时搜索，仅用本地课程目录</option><option value="brave">Brave Search API</option><option value="tavily">Tavily Search API</option></select><input id="searchApiKey" type="password" placeholder="搜索服务 API Key"><button id="saveSearchKeyBtn" type="button" class="primary">保存课程搜索设置</button></div><p id="searchKeyStatus" class="hint">未配置时只能推荐内置的 AI/编程课程。配置后只会向搜索服务发送学习主题，不会发送姓名、电话、完整简历或完整 JD。</p><p class="hint">申请入口：<a href="https://brave.com/search/api/" target="_blank" rel="noopener">Brave Search API</a> · <a href="https://tavily.com/" target="_blank" rel="noopener">Tavily</a></p></section>
+      <section><label>本地数据</label><div class="row backup-actions"><button id="backupBtn" type="button" class="secondary">下载备份</button><label class="button-like">恢复备份<input id="restoreInput" type="file" accept="application/json"></label></div><p class="hint">备份包含档案和历史版本，不包含 API Key。</p></section>
+      <section><div class="row between"><label>历史版本</label><button id="refreshVersionsBtn" type="button" class="text-button">刷新</button></div><div id="versionList" class="version-list"></div></section>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js?v=20260816.1" defer></script>
+</body>
+</html>

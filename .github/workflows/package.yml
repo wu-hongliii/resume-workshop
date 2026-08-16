@@ -1,0 +1,190 @@
+name: Build release packages
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version for a manual test build
+        required: true
+        default: "0.3.0-beta"
+
+permissions:
+  contents: read
+
+env:
+  PACKAGE_VERSION: ${{ inputs.version || github.ref_name || '0.3.0-beta' }}
+
+jobs:
+  windows:
+    name: Windows x64 installer and portable ZIP
+    runs-on: windows-latest
+    timeout-minutes: 50
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}\build\playwright-browsers
+      RESUME_WORKSHOP_BROWSER_BUNDLE: ${{ github.workspace }}\build\playwright-browsers
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install packaging dependencies and Chromium
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r packaging/requirements-package.txt
+          python -m playwright install --only-shell chromium
+      - name: Build application folder
+        run: python -m PyInstaller --noconfirm --clean packaging/resume_workshop.spec
+      - name: Smoke-test packaged application
+        shell: pwsh
+        env:
+          RESUME_WORKSHOP_PORT: "8878"
+          RESUME_WORKSHOP_DATA_DIR: ${{ github.workspace }}\build\smoke-data
+          RESUME_WORKSHOP_NO_BROWSER: "1"
+        run: |
+          $process = Start-Process -FilePath "dist\ResumeWorkshop\ResumeWorkshop.exe" -PassThru
+          try {
+            $healthy = $false
+            foreach ($attempt in 1..45) {
+              try {
+                $response = Invoke-RestMethod -Uri "http://127.0.0.1:8878/api/health" -TimeoutSec 2
+                if ($response.ok) { $healthy = $true; break }
+              } catch {}
+              Start-Sleep -Seconds 1
+            }
+            if (-not $healthy) { throw "Packaged application did not become healthy" }
+          } finally {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+      - name: Create portable ZIP
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path release -Force | Out-Null
+          Compress-Archive -Path "dist\ResumeWorkshop" -DestinationPath "release\ResumeWorkshop-Portable-Windows-x64.zip" -CompressionLevel Optimal
+          Get-FileHash "release\ResumeWorkshop-Portable-Windows-x64.zip" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  ResumeWorkshop-Portable-Windows-x64.zip" } | Set-Content "release\ResumeWorkshop-Portable-Windows-x64.sha256"
+      - name: Build per-user installer with license agreement
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          $languageDir = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages"
+          New-Item -ItemType Directory -Force -Path $languageDir | Out-Null
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/jrsoftware/issrc/is-6_7_1/Files/Languages/Unofficial/ChineseSimplified.isl" `
+            -OutFile "$languageDir\ChineseSimplified.isl"
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=${{ env.PACKAGE_VERSION }}" "packaging\windows-installer.iss"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed with exit code $LASTEXITCODE" }
+          Get-FileHash "release\ResumeWorkshop-Setup-Windows-x64.exe" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  ResumeWorkshop-Setup-Windows-x64.exe" } | Set-Content "release\ResumeWorkshop-Setup-Windows-x64.sha256"
+      - name: Attest tagged release artifacts
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/attest@v4
+        with:
+          subject-path: release/*
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ResumeWorkshop-Windows-x64-${{ env.PACKAGE_VERSION }}
+          path: release/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  macos:
+    name: macOS ${{ matrix.label }} DMG
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            label: Intel-x64
+          - runner: macos-15
+            label: Apple-Silicon-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/build/playwright-browsers
+      RESUME_WORKSHOP_BROWSER_BUNDLE: ${{ github.workspace }}/build/playwright-browsers
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install packaging dependencies and Chromium
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r packaging/requirements-package.txt
+          python -m playwright install --only-shell chromium
+      - name: Build application bundle
+        run: python -m PyInstaller --noconfirm --clean packaging/resume_workshop.spec
+      - name: Smoke-test packaged application
+        shell: bash
+        env:
+          RESUME_WORKSHOP_PORT: "8878"
+          RESUME_WORKSHOP_DATA_DIR: ${{ github.workspace }}/build/smoke-data
+          RESUME_WORKSHOP_NO_BROWSER: "1"
+        run: |
+          "dist/Resume Workshop.app/Contents/MacOS/ResumeWorkshop" > build/macos-app.log 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:8878/api/health > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat build/macos-app.log
+          exit 1
+      - name: Create ad-hoc-signed DMG
+        run: |
+          codesign --force --deep --sign - "dist/Resume Workshop.app"
+          mkdir -p release
+          hdiutil create -volname "Resume Workshop" -srcfolder "dist/Resume Workshop.app" -ov -format UDZO "release/ResumeWorkshop-macOS-${{ matrix.label }}.dmg"
+          shasum -a 256 "release/ResumeWorkshop-macOS-${{ matrix.label }}.dmg" > "release/ResumeWorkshop-macOS-${{ matrix.label }}.sha256"
+      - name: Attest tagged release artifacts
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/attest@v4
+        with:
+          subject-path: release/*
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ResumeWorkshop-macOS-${{ matrix.label }}-${{ env.PACKAGE_VERSION }}
+          path: release/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          path: release-staging
+      - name: Collect release files
+        run: |
+          mkdir -p release
+          find release-staging -type f -exec cp {} release/ \;
+          ls -la release
+      - name: Publish tag as a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease_flag=""
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then prerelease_flag="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" release/* --title "简历工坊 $GITHUB_REF_NAME" --generate-notes $prerelease_flag
