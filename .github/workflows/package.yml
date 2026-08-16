@@ -9,6 +9,12 @@ on:
         description: Package version for a manual test build
         required: true
         default: "0.3.0-beta"
+      artifact_run_id:
+        description: Existing successful package run ID to publish without rebuilding
+        required: false
+      release_tag:
+        description: Existing tag to publish when artifact_run_id is provided
+        required: false
 
 permissions:
   contents: read
@@ -18,6 +24,7 @@ env:
 
 jobs:
   windows:
+    if: inputs.artifact_run_id == ''
     name: Windows x64 installer and portable ZIP
     runs-on: windows-latest
     timeout-minutes: 50
@@ -96,6 +103,7 @@ jobs:
           retention-days: 30
 
   macos:
+    if: inputs.artifact_run_id == ''
     name: macOS ${{ matrix.label }} DMG
     strategy:
       fail-fast: false
@@ -167,15 +175,18 @@ jobs:
 
   release:
     name: Publish GitHub Release
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: always() && (startsWith(github.ref, 'refs/tags/v') || inputs.artifact_run_id != '')
     needs: [windows, macos]
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: write
     steps:
       - uses: actions/download-artifact@v6
         with:
           path: release-staging
+          run-id: ${{ inputs.artifact_run_id || github.run_id }}
+          github-token: ${{ github.token }}
       - name: Collect release files
         run: |
           mkdir -p release
@@ -185,6 +196,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          tag_name="${{ inputs.release_tag || github.ref_name }}"
           prerelease_flag=""
-          if [[ "$GITHUB_REF_NAME" == *-* ]]; then prerelease_flag="--prerelease"; fi
-          gh release create "$GITHUB_REF_NAME" release/* --title "简历工坊 $GITHUB_REF_NAME" --generate-notes $prerelease_flag
+          if [[ "$tag_name" == *-* ]]; then prerelease_flag="--prerelease"; fi
+          gh release create "$tag_name" release/* --repo "$GITHUB_REPOSITORY" --title "简历工坊 $tag_name" --generate-notes $prerelease_flag
