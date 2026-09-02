@@ -4,7 +4,7 @@ httpx==0.28.1
 python-docx==1.2.0
 pymupdf==1.27.2.3
 Pillow==12.3.0
-pypdf==6.15.0
+pypdf==6.16.1
 easyocr==1.7.2
 rapidocr==3.7.0
 playwright>=1.50.0
